@@ -1,34 +1,29 @@
 package az.edu.ada.wm2.lab6.model.mapper;
 
 import az.edu.ada.wm2.lab6.model.Category;
-import az.edu.ada.wm2.lab6.model.Product;
-import az.edu.ada.wm2.lab6.model.dto.ProductRequestDto;
-import az.edu.ada.wm2.lab6.model.dto.ProductResponseDto;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import az.edu.ada.wm2.lab6.model.dto.CategoryRequestDto;
+import az.edu.ada.wm2.lab6.model.dto.CategoryResponseDto;
 
-import java.util.List;
+public class CategoryMapper {
 
-@Mapper(componentModel = "spring")
-public interface ProductMapper {
-
-    // Entity to Response DTO
-    @Mapping(target = "categoryNames", source = "categories")
-    ProductResponseDto toResponseDto(Product product);
-
-    // Request DTO to Entity (without categories!)
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "categories", ignore = true)
-    Product toEntity(ProductRequestDto dto);
-
-    // Custom mapping: List<Category> to List<String>
-    default List<String> mapCategoriesToNames(List<Category> categories) {
-        if (categories == null) {
-            return List.of();
+    public static Category toEntity(CategoryRequestDto dto) {
+        if (dto == null) {
+            return null;
         }
 
-        return categories.stream()
-                .map(Category::getName)
-                .toList();
+        Category category = new Category();
+        category.setName(dto.getName());
+        return category;
+    }
+
+    public static CategoryResponseDto toResponseDto(Category category) {
+        if (category == null) {
+            return null;
+        }
+
+        return new CategoryResponseDto(
+                category.getId(),
+                category.getName()
+        );
     }
 }
