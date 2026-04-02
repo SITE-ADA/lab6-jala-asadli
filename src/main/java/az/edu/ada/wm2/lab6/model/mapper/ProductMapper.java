@@ -8,20 +8,22 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
+    // Entity → Response DTO
     @Mapping(target = "categoryNames", source = "categories")
-    @Mapping(target = "productName", source = "name")
     ProductResponseDto toResponseDto(Product product);
 
+    // Request DTO → Entity (without categories!)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "categories", ignore = true)
-    @Mapping(target = "name", source = "productName")
     Product toEntity(ProductRequestDto dto);
 
-    default List<String> mapCategoriesToNames(List<Category> categories) {
+    // Custom mapping: Set<Category> → List<String>
+    default List<String> mapCategoriesToNames(Set<Category> categories) {
         return categories.stream()
                 .map(Category::getName)
                 .toList();
