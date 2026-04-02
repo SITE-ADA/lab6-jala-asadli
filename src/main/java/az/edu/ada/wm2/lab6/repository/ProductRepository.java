@@ -10,5 +10,5 @@ import java.util.UUID;
 
 public interface ProductRepository extends JpaRepository<Product, UUID> {
     List<Product> findByExpirationDateBefore(LocalDate date);
-    List<Product> findByPriceBetween(BigDecimal minPrice, BigDecimal maxPrice);
+    List<Product> findByPriceBetween(BigDecimal min, BigDecimal max);
 }

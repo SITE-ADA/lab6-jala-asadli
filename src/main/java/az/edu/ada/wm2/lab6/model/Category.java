@@ -6,19 +6,15 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-@Builder
 @Entity
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Category {
@@ -29,7 +25,6 @@ public class Category {
 
     private String name;
 
-    @Builder.Default
     @ManyToMany(mappedBy = "categories")
-    private Set<Product> products = new HashSet<>();
+    private List<Product> products = new ArrayList<>();
 }

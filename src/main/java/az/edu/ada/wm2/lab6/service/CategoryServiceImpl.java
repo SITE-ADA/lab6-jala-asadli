@@ -9,9 +9,9 @@ import az.edu.ada.wm2.lab6.model.mapper.CategoryMapper;
 import az.edu.ada.wm2.lab6.model.mapper.ProductMapper;
 import az.edu.ada.wm2.lab6.repository.CategoryRepository;
 import az.edu.ada.wm2.lab6.repository.ProductRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,7 +22,6 @@ public class CategoryServiceImpl implements CategoryService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
-    @Autowired
     public CategoryServiceImpl(CategoryRepository categoryRepository,
                                ProductRepository productRepository,
                                ProductMapper productMapper) {
@@ -34,12 +33,19 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryResponseDto create(CategoryRequestDto dto) {
         Category category = CategoryMapper.toEntity(dto);
-        return CategoryMapper.toResponseDto(categoryRepository.save(category));
+
+        if (category.getProducts() == null) {
+            category.setProducts(new ArrayList<>());
+        }
+
+        Category savedCategory = categoryRepository.save(category);
+        return CategoryMapper.toResponseDto(savedCategory);
     }
 
     @Override
     public List<CategoryResponseDto> getAll() {
-        return categoryRepository.findAll().stream()
+        return categoryRepository.findAll()
+                .stream()
                 .map(CategoryMapper::toResponseDto)
                 .toList();
     }
@@ -48,12 +54,19 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponseDto addProduct(UUID categoryId, UUID productId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
 
-        product.getCategories().add(category);
-        productRepository.save(product);
+        if (product.getCategories() == null) {
+            product.setCategories(new ArrayList<>());
+        }
 
+        if (!product.getCategories().contains(category)) {
+            product.getCategories().add(category);
+        }
+
+        productRepository.save(product);
         return CategoryMapper.toResponseDto(category);
     }
 
@@ -62,7 +75,8 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
 
-        return category.getProducts().stream()
+        return category.getProducts()
+                .stream()
                 .map(productMapper::toResponseDto)
                 .toList();
     }

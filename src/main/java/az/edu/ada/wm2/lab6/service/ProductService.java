@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ProductService {
-    ProductResponseDto createProduct(ProductRequestDto dto);
+    ProductResponseDto createProduct(ProductRequestDto product);
     ProductResponseDto getProductById(UUID id);
     List<ProductResponseDto> getAllProducts();
-    ProductResponseDto updateProduct(UUID id, ProductRequestDto dto);
+    ProductResponseDto updateProduct(UUID id, ProductRequestDto product);
     void deleteProduct(UUID id);
     List<ProductResponseDto> getProductsExpiringBefore(LocalDate date);
     List<ProductResponseDto> getProductsByPriceRange(BigDecimal minPrice, BigDecimal maxPrice);

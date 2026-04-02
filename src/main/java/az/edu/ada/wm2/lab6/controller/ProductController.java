@@ -3,18 +3,9 @@ package az.edu.ada.wm2.lab6.controller;
 import az.edu.ada.wm2.lab6.model.dto.ProductRequestDto;
 import az.edu.ada.wm2.lab6.model.dto.ProductResponseDto;
 import az.edu.ada.wm2.lab6.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -27,20 +18,25 @@ public class ProductController {
 
     private final ProductService productService;
 
-    @Autowired
     public ProductController(ProductService productService) {
         this.productService = productService;
     }
 
     @PostMapping
-    public ResponseEntity<ProductResponseDto> createProduct(@RequestBody ProductRequestDto dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(productService.createProduct(dto));
+    public ResponseEntity<ProductResponseDto> createProduct(@RequestBody ProductRequestDto product) {
+        try {
+            ProductResponseDto createdProduct = productService.createProduct(product);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponseDto> getProductById(@PathVariable UUID id) {
         try {
-            return ResponseEntity.ok(productService.getProductById(id));
+            ProductResponseDto product = productService.getProductById(id);
+            return ResponseEntity.ok(product);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -48,14 +44,18 @@ public class ProductController {
 
     @GetMapping
     public ResponseEntity<List<ProductResponseDto>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+        List<ProductResponseDto> products = productService.getAllProducts();
+        return ResponseEntity.ok(products);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponseDto> updateProduct(@PathVariable UUID id,
-                                                            @RequestBody ProductRequestDto dto) {
+                                                            @RequestBody ProductRequestDto product) {
         try {
-            return ResponseEntity.ok(productService.updateProduct(id, dto));
+            ProductResponseDto updatedProduct = productService.updateProduct(id, product);
+            return ResponseEntity.ok(updatedProduct);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -65,7 +65,7 @@ public class ProductController {
     public ResponseEntity<Void> deleteProduct(@PathVariable UUID id) {
         try {
             productService.deleteProduct(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -73,13 +73,15 @@ public class ProductController {
 
     @GetMapping("/filter/expiring")
     public ResponseEntity<List<ProductResponseDto>> getProductsExpiringBefore(@RequestParam LocalDate date) {
-        return ResponseEntity.ok(productService.getProductsExpiringBefore(date));
+        List<ProductResponseDto> products = productService.getProductsExpiringBefore(date);
+        return ResponseEntity.ok(products);
     }
 
     @GetMapping("/filter/price")
     public ResponseEntity<List<ProductResponseDto>> getProductsByPriceRange(
             @RequestParam BigDecimal minPrice,
             @RequestParam BigDecimal maxPrice) {
-        return ResponseEntity.ok(productService.getProductsByPriceRange(minPrice, maxPrice));
+        List<ProductResponseDto> products = productService.getProductsByPriceRange(minPrice, maxPrice);
+        return ResponseEntity.ok(products);
     }
 }
