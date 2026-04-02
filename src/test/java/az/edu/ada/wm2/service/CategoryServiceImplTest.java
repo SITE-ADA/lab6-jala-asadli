@@ -1,31 +1,68 @@
-package az.edu.ada.wm2.lab6.model;
+package az.edu.ada.wm2.service;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import az.edu.ada.wm2.lab6.model.Category;
+import az.edu.ada.wm2.lab6.model.Product;
+import az.edu.ada.wm2.lab6.model.dto.CategoryRequestDto;
+import az.edu.ada.wm2.lab6.model.dto.CategoryResponseDto;
+import az.edu.ada.wm2.lab6.model.dto.ProductResponseDto;
+import az.edu.ada.wm2.lab6.model.mapper.CategoryMapper;
+import az.edu.ada.wm2.lab6.model.mapper.ProductMapper;
+import az.edu.ada.wm2.lab6.repository.CategoryRepository;
+import az.edu.ada.wm2.lab6.repository.ProductRepository;
+import az.edu.ada.wm2.lab6.service.CategoryService;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
-@Entity
-@Table(name = "categories")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class Category {
+class CategoryServiceImpl implements CategoryService {
 
-    @Id
-    private UUID id;
+    private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
+    private final ProductMapper productMapper;
 
-    private String name;
+    public CategoryServiceImpl(CategoryRepository categoryRepository,
+                               ProductRepository productRepository,
+                               ProductMapper productMapper) {
+        this.categoryRepository = categoryRepository;
+        this.productRepository = productRepository;
+        this.productMapper = productMapper;
+    }
 
-    @ManyToMany(mappedBy = "categories")
-    private Set<Product> products = new HashSet<>();
+    @Override
+    public CategoryResponseDto create(CategoryRequestDto dto) {
+        Category category = CategoryMapper.toEntity(dto);
+        return CategoryMapper.toResponseDto(categoryRepository.save(category));
+    }
+
+    @Override
+    public List<CategoryResponseDto> getAll() {
+        return categoryRepository.findAll().stream()
+                .map(CategoryMapper::toResponseDto)
+                .toList();
+    }
+
+    @Override
+    public CategoryResponseDto addProduct(UUID categoryId, UUID productId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
+        if (product.getCategories() == null) {
+            product.setCategories(new ArrayList<>());
+        }
+        product.getCategories().add(category);
+        productRepository.save(product);
+        return CategoryMapper.toResponseDto(category);
+    }
+
+    @Override
+    public List<ProductResponseDto> getProducts(UUID categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryId));
+        return category.getProducts().stream()
+                .map(productMapper::toResponseDto)
+                .toList();
+    }
 }

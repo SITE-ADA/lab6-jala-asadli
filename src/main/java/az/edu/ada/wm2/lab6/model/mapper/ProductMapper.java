@@ -12,13 +12,16 @@ import java.util.List;
 @Mapper(componentModel = "spring")
 public interface ProductMapper {
 
+    // Entity to Response DTO
     @Mapping(target = "categoryNames", source = "categories")
     ProductResponseDto toResponseDto(Product product);
 
+    // Request DTO to Entity (without categories!)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "categories", ignore = true)
     Product toEntity(ProductRequestDto dto);
 
+    // Custom mapping: List<Category> to List<String>
     default List<String> mapCategoriesToNames(List<Category> categories) {
         if (categories == null) {
             return List.of();
