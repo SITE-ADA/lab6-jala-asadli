@@ -1,21 +1,46 @@
 package az.edu.ada.wm2.lab6.model;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+@Entity
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Product {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
     private String productName;
     private BigDecimal price;
     private LocalDate expirationDate;
 
-    // Constructors
-    public Product() {
-    }
+    @ManyToMany
+    @JoinTable(
+            name = "product_category",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    @Builder.Default
+    private List<Category> categories = new ArrayList<>();
 
     public Product(String productName, BigDecimal price, LocalDate expirationDate) {
-        this.id = UUID.randomUUID();
         this.productName = productName;
         this.price = price;
         this.expirationDate = expirationDate;
@@ -28,7 +53,6 @@ public class Product {
         this.expirationDate = expirationDate;
     }
 
-    // Getters and Setters
     public UUID getId() {
         return id;
     }
@@ -61,13 +85,11 @@ public class Product {
         this.expirationDate = expirationDate;
     }
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", productName='" + productName + '\'' +
-                ", price=" + price +
-                ", expirationDate=" + expirationDate +
-                '}';
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
     }
 }
